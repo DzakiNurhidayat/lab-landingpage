@@ -1,0 +1,46 @@
+name: CI/CD Pipeline - Deploy to Azure ACI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout kode dari repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Login ke ACR
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: acrlandingpagekota301
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Step 3: Build dan Push Docker image
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }} .
+          docker push ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }}
+
+      # Step 4: Install Azure CLI
+      - name: Setup Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      # Step 5: Login ke Azure pakai username/password ACR + az login device
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          auth-type: SERVICE_PRINCIPAL
+          creds: '{"clientId":"acrlandingpagekota301","clientSecret":"${{ secrets.ACR_PASSWORD }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      # Step 6: Deploy ke ACI
+      - name: Deploy to ACI
+        run: |
+          az container create --resource-group rg-lab-docker --name ${{ secrets.SERVICE_NAME }} --image ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }} --cpu 1 --memory 1 --registry-login-server ${{ secrets.REGISTRY_URL }} --registry-username acrlandingpagekota301 --registry-password ${{ secrets.ACR_PASSWORD }} --dns-name-label landingpage-kota301 --ports 80 --os-type Linux
