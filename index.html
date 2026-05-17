@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>World of Penguins — Versi 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --card: #1c1c1c;
+      --border: rgba(255,255,255,0.08);
+      --white: #f0f0f0;
+      --gold: #f5c842;
+      --orange: #ff6b35;
+      --muted: rgba(240,240,240,0.45);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Diagonal accent block top */
+    .top-bar {
+      background: var(--gold);
+      height: 6px;
+      width: 100%;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 56px;
+      animation: slideRight 0.6s ease both;
+    }
+
+    .header-left h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 9vw, 6.5rem);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      color: var(--white);
+    }
+
+    .header-left h1 .highlight {
+      color: var(--gold);
+      display: block;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      padding-top: 12px;
+      min-width: 130px;
+    }
+
+    .version-pill {
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    .platform-pill {
+      background: rgba(245,200,66,0.12);
+      border: 1px solid rgba(245,200,66,0.3);
+      color: var(--gold);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    /* Big intro */
+    .intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 64px;
+      animation: fadeUp 0.7s 0.15s ease both;
+    }
+
+    .intro-text p {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--muted);
+    }
+
+    .intro-text p strong {
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .intro-visual {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .big-penguin {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 12px;
+      animation: bounce 2.5s ease-in-out infinite;
+    }
+
+    .intro-visual p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Species section */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(245,200,66,0.2);
+    }
+
+    /* Species grid */
+    .species-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 56px;
+      animation: fadeUp 0.7s 0.25s ease both;
+    }
+
+    .species-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 18px;
+      transition: all 0.25s ease;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .species-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--gold);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .species-card:hover {
+      border-color: rgba(245,200,66,0.25);
+      transform: translateY(-3px);
+    }
+
+    .species-card:hover::before { opacity: 1; }
+
+    .species-icon { font-size: 1.8rem; margin-bottom: 10px; display: block; }
+    .species-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .species-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .species-origin {
+      font-size: 0.68rem;
+      color: var(--gold);
+      font-weight: 600;
+      margin-top: 8px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Fun facts horizontal scroll */
+    .facts-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 56px;
+      animation: fadeUp 0.7s 0.35s ease both;
+    }
+
+    .fact-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .fact-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      color: var(--orange);
+      letter-spacing: 0.03em;
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .fact-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Update notice */
+    .update-notice {
+      background: linear-gradient(135deg, rgba(255,107,53,0.12) 0%, rgba(245,200,66,0.08) 100%);
+      border: 1px solid rgba(255,107,53,0.25);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 48px;
+      animation: fadeUp 0.7s 0.45s ease both;
+    }
+
+    .update-icon { font-size: 2.2rem; flex-shrink: 0; }
+
+    .update-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 4px;
+    }
+
+    .update-text p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeUp 0.7s 0.5s ease both;
+    }
+
+    .footer p {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .footer-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .intro { grid-template-columns: 1fr; }
+      .species-grid { grid-template-columns: 1fr 1fr; }
+      .facts-row { grid-template-columns: 1fr 1fr; }
+      .header { flex-direction: column; }
+      .header-right { align-items: flex-start; flex-direction: row; }
+      .footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+
+    /* Animations */
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(-24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar"></div>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>PENGUIN<span class="highlight">PEDIA</span></h1>
+      </div>
+      <div class="header-right">
+        <span class="version-pill">🆕 Versi 2.0</span>
+        <span class="platform-pill">☁️ Azure</span>
+      </div>
+    </div>
+
+    <!-- Intro -->
+    <div class="intro">
+      <div class="intro-text">
+        <div class="section-label">Tentang Portal Ini</div>
+        <p>
+          <strong>PenguinPedia</strong> adalah portal edukasi interaktif yang didedikasikan untuk
+          mengeksplorasi kehidupan penguin secara mendalam. Dari spesies terkecil hingga terbesar,
+          dari Antartika hingga khatulistiwa — semua ada di sini.
+        </p>
+        <br/>
+        <p>
+          Versi 2.0 hadir dengan <strong>konten yang lebih lengkap</strong>, tampilan baru yang lebih modern,
+          dan informasi spesies yang diperluas. Di-deploy menggunakan <strong>Docker + Azure Container Instances</strong>
+          dengan <strong>Zero Downtime Rolling Update</strong>.
+        </p>
+      </div>
+      <div class="intro-visual">
+        <span class="big-penguin">🐧</span>
+        <p>Makhluk hitam-putih paling ikonik<br/>di planet ini</p>
+      </div>
+    </div>
+
+    <!-- Species -->
+    <div class="section-label">Spesies Populer</div>
+    <div class="species-grid">
+      <div class="species-card">
+        <span class="species-icon">👑</span>
+        <div class="species-name">Emperor Penguin</div>
+        <div class="species-desc">Spesies terbesar. Hidup di Antartika dan bisa menyelam hingga 500m.</div>
+        <div class="species-origin">📍 Antartika</div>
+      </div>
+      <div class="species-card">
+        <span class="species-icon">🔵</span>
+        <div class="species-name">Little Blue Penguin</div>
+        <div class="species-desc">Spesies terkecil di dunia. Tingginya hanya sekitar 30–33 cm.</div>
+        <div class="species-origin">📍 Australia & NZ</div>
+      </div>
+      <div class="species-card">
+        <span class="species-icon">🎭</span>
+        <div class="species-name">Macaroni Penguin</div>
+        <div class="species-desc">Dikenal karena jambul kuning oranye yang mencolok di kepalanya.</div>
+        <div class="species-origin">📍 Sub-Antartika</div>
+      </div>
+      <div class="species-card">
+        <span class="species-icon">🌋</span>
+        <div class="species-name">Galápagos Penguin</div>
+        <div class="species-desc">Satu-satunya penguin yang hidup di kawasan tropis di khatulistiwa.</div>
+        <div class="species-origin">📍 Galápagos, Ekuador</div>
+      </div>
+      <div class="species-card">
+        <span class="species-icon">🎨</span>
+        <div class="species-name">African Penguin</div>
+        <div class="species-desc">Memiliki suara seperti keledai dan merupakan penguin asli Afrika.</div>
+        <div class="species-origin">📍 Afrika Selatan</div>
+      </div>
+      <div class="species-card">
+        <span class="species-icon">❄️</span>
+        <div class="species-name">Adélie Penguin</div>
+        <div class="species-desc">Dikenal agresif dan berani. Penguin ikonik di daratan Antartika.</div>
+        <div class="species-origin">📍 Antartika</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="section-label">Fakta Menarik</div>
+    <div class="facts-row">
+      <div class="fact-box">
+        <span class="fact-num">18</span>
+        <span class="fact-label">Spesies di Dunia</span>
+      </div>
+      <div class="fact-box">
+        <span class="fact-num">500m</span>
+        <span class="fact-label">Kedalaman Selam</span>
+      </div>
+      <div class="fact-box">
+        <span class="fact-num">25thn</span>
+        <span class="fact-label">Usia Tertua</span>
+      </div>
+      <div class="fact-box">
+        <span class="fact-num">40kg</span>
+        <span class="fact-label">Berat Emperor</span>
+      </div>
+    </div>
+
+    <!-- Update notice -->
+    <div class="update-notice">
+      <div class="update-icon">🚀</div>
+      <div class="update-text">
+        <h4>Rolling Update Berhasil — Versi 2.0 Aktif!</h4>
+        <p>
+          Halaman ini merupakan hasil pembaruan tanpa downtime menggunakan Docker image <strong>:v2</strong>
+          yang di-deploy ke Azure Container Instances. URL publik tidak berubah — hanya kontennya yang diperbarui.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Modul 3 — Containerization, Serverless & Rolling Update &nbsp;·&nbsp; Azure Platform</p>
+      <div class="footer-badge">🐳 Docker &nbsp;+&nbsp; ☁️ Azure</div>
+    </div>
+
+  </div>
+</body>
+</html>
