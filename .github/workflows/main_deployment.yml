@@ -10,31 +10,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout kode
+      # Step 1: Checkout kode dari repository
+      # Marketplace: https://github.com/marketplace/actions/checkout
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Login ke ACR
+      # Step 2: Login ke Azure Container Registry (ACR)
+      # Marketplace: https://github.com/marketplace/actions/azure-container-registry-login
       - name: Login to ACR
-        uses: docker/login-action@v3
+        uses: azure/docker-login@v1
         with:
-          registry: ${{ secrets.REGISTRY_URL }}
+          login-server: ${{ secrets.REGISTRY_URL }}
           username: acrlandingpagekota301
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # Step 3: Build dan Push Docker image
+      # Step 3: Build dan Push Docker Image ke ACR
+      # Marketplace: https://github.com/marketplace/actions/build-and-push-docker-images
       - name: Build and Push Docker Image
-        run: |
-          docker build -t ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }} .
-          docker push ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }}
 
-      # Step 4: Install Azure CLI & Login
+      # Step 4: Login ke Azure menggunakan username & password
+      # Marketplace: https://github.com/marketplace/actions/azure-login
       - name: Login to Azure
-        run: |
-          az login --username ${{ secrets.AZURE_USERNAME }} --password ${{ secrets.AZURE_PASSWORD }}
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        uses: azure/login@v2
+        with:
+          auth-type: identity
+          creds: '{"clientId":"${{ secrets.AZURE_USERNAME }}","clientSecret":"${{ secrets.AZURE_PASSWORD }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"98374cd7-c8b8-413c-8476-b8722ae7e8e8"}'
 
-      # Step 5: Deploy ke ACI
+      # Step 5: Deploy image terbaru ke Azure Container Instance
+      # Marketplace: https://github.com/marketplace/actions/deploy-to-azure-container-instances
       - name: Deploy to ACI
-        run: |
-          az container create --resource-group rg-lab-docker --name ${{ secrets.SERVICE_NAME }} --image ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }} --cpu 1 --memory 1 --registry-login-server ${{ secrets.REGISTRY_URL }} --registry-username acrlandingpagekota301 --registry-password ${{ secrets.ACR_PASSWORD }} --dns-name-label landingpage-kota301 --ports 80 --os-type Linux
+        uses: azure/aci-deploy@v1
+        with:
+          resource-group: rg-lab-docker
+          dns-name-label: landingpage-kota301
+          image: ${{ secrets.REGISTRY_URL }}/repo-landingpage-kota301:${{ github.sha }}
+          registry-login-server: ${{ secrets.REGISTRY_URL }}
+          registry-username: acrlandingpagekota301
+          registry-password: ${{ secrets.ACR_PASSWORD }}
+          name: ${{ secrets.SERVICE_NAME }}
+          location: southeastasia
+          ports: 80
+          os-type: Linux
+          cpu: 1
+          memory: 1
