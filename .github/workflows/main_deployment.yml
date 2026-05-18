@@ -36,10 +36,9 @@ jobs:
       # Step 4: Login ke Azure menggunakan username & password
       # Marketplace: https://github.com/marketplace/actions/azure-login
       - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          auth-type: identity
-          creds: '{"clientId":"${{ secrets.AZURE_USERNAME }}","clientSecret":"${{ secrets.AZURE_PASSWORD }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"98374cd7-c8b8-413c-8476-b8722ae7e8e8"}'
+        run: |
+          az login --username ${{ secrets.AZURE_USERNAME }} --password ${{ secrets.AZURE_PASSWORD }}
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # Step 5: Deploy image terbaru ke Azure Container Instance
       # Marketplace: https://github.com/marketplace/actions/deploy-to-azure-container-instances
